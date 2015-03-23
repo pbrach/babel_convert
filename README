@@ -10,7 +10,7 @@ faults) are handled automatically.
 
 License:
 --------
-    Copyright (C) 2015  Hans-Phili Brachvogel
+    Copyright (C) 2015  Hans-Philipp Brachvogel
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ Converts the individual CIF-files of a COD checkout into a single SDFile
 containing all molecules WITHOUT hydrogens and NO properties 
 or metadata. Every resulting molecule entry will contain only one
 connected molecule (OpenBabels --separate flag is used).
+    * converts many CIFs to a single SDFile
     * hydrogens are removed
     * properties and metadata are deleted
     * connected components are separated into individual molecule entries
@@ -49,7 +50,7 @@ Use the tool with any POSIX compatible operating system (MacOS, Linux) but
 
 How to use:
 -----------
-Change your directory into COD_converter_tool and call
+Change directory to ..somewhere../COD_converter_tool/ and call
 
     ./babel_convert <path to cifs>
 
