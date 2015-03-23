@@ -1,23 +1,93 @@
-README:
+                    *****************
+                      babel_convert
+                    *****************
+a OpenBabel wrapper for the conversion of CIF files to a single SDFile.
 
-1.) use "cod_conversion_helper" to quickly generate a list of file pathes
-    where to find the cif files.
-    For that specify the root directory where the cif-files reside in
-    as first commandline arument. Also pipe the output of the tool into a 
-    file that can then later used by "babel_convert". Call:
+The advantage is that all your cpu cores will be utilized and typical OpenBabel
+problems of CIF conversion (like endless loops and unexpected segmentation 
+faults) are handled automatically.
 
-    ./cod_conversion_helper <CIF-rood dir> > temp_file
 
-2.) use "babel_convert" to convert all CIFs specified in "temp_file".
-    Call:
+License:
+--------
+    Copyright (C) 2015  Hans-Phili Brachvogel
 
-    ./babel_convert temp_file
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    The result will be written to this folder into "conversion_out.sdf".
-    It will contain all successfully converted structures.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+What it does:
+-------------
+Converts the individual CIF-files of a COD checkout into a single SDFile 
+containing all molecules WITHOUT hydrogens and NO properties 
+or metadata. Every resulting molecule entry will contain only one
+connected molecule (OpenBabels --separate flag is used).
     * hydrogens are removed
-    * properties are deleted
+    * properties and metadata are deleted
     * connected components are separated into individual molecule entries
 
-3.) You may use "remove_meta" strip the resulting sdf-files of the often
-    wrong meta annotations that come from the babel-conversion process.
+
+Installation/Dependencies:
+--------------------------
+Have OpenBabel (version 2.3.2) and Python (version 2.7.x) installed and make
+sure that they are on your 'PATH' i.e.: you can start the programs by typing 
+'babel' or 'python' in your commandline in any directory.
+
+Use the tool with any POSIX compatible operating system (MacOS, Linux) but
+'babel_convert' probably won't work on windows.
+
+
+How to use:
+-----------
+Change your directory into COD_converter_tool and call
+
+    ./babel_convert <path to cifs>
+
+Where <path to cifs> is the root directory containing all cifs in some 
+subdirectory. The resulting SDFfile will appear in the directory and is named
+"conversion_out.sdf". 
+During conversion individual SDFiles will be written into a temporary directroy
+within COD_converter_tool. Do NOT touch them they will be cleaned up at the end.
+To convert the whole COD I need about 70 minutes on a hexa core i7-3930.
+
+Example for the cif directory:
+The SNV COD-checkout directory is initially called 
+"<where you called svn co>/cod/" and all cifs can be found under 
+"<where you called svn co>/cod/cif". This would be the necessary path to 
+specify.
+
+You can make a test run with the directory "test_cifs" that conatins 3 cif files
+2 of them producing errors and one being actually converted.
+
+
+Where do I get the COD data?
+----------------------------
+Download the COD via commandline using SVN (subversion):
+
+    svn co svn://www.crystallography.net/cod
+
+and the following commands to update it:
+
+    cd cod
+
+    svn update
+
+
+What is in "individual_steps"
+-----------------------------
+It contains some python and bash scripts that do parts of the main tool 
+'babel_convert'. Only the tool 'single_convert.py' is necessary for the main 
+tool to work. Theo ther ones are additional for you to play with.
+
+"find_cif_pathes" lists all absolute pathes to the cif files. It shows you
+how to use UNIX 'find' to locate those files
