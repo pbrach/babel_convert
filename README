@@ -1,0 +1,23 @@
+README:
+
+1.) use "cod_conversion_helper" to quickly generate a list of file pathes
+    where to find the cif files.
+    For that specify the root directory where the cif-files reside in
+    as first commandline arument. Also pipe the output of the tool into a 
+    file that can then later used by "babel_convert". Call:
+
+    ./cod_conversion_helper <CIF-rood dir> > temp_file
+
+2.) use "babel_convert" to convert all CIFs specified in "temp_file".
+    Call:
+
+    ./babel_convert temp_file
+
+    The result will be written to this folder into "conversion_out.sdf".
+    It will contain all successfully converted structures.
+    * hydrogens are removed
+    * properties are deleted
+    * connected components are separated into individual molecule entries
+
+3.) You may use "remove_meta" strip the resulting sdf-files of the often
+    wrong meta annotations that come from the babel-conversion process.

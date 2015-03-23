@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+
+in_file = open(sys.argv[1], 'r')
+
+is_header = True
+cnt = 0
+
+for line in in_file:
+  # modify header
+  if is_header:
+    if line.endswith("V2000\n"):
+      print "COD molecule",cnt
+      print " molecule",cnt
+      print
+      print line[:-1]
+      is_header = False
+      cnt += 1
+
+  # start header-mode if '$$$$' is found
+  elif (line.startswith("$$$$") ):
+    print line[:-1]
+    is_header = True
+
+  # remove meta-data (charge) lines
+  else:
+    if (not line.startswith("M") ):
+      print line[:-1]
+
+    else:
+      if (line.startswith("M  END") ):
+        print line[:-1]

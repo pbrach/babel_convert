@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Collect all full pathes to all indifidual *cif-files of a user defined 
+# top-level directory
+
+export ROOT_DIR=${1} # first arg defined the root-dir to search for cifs
+
+# check if last character is a '/'
+if [ ${ROOT_DIR: -1} = "/" ]; then
+
+    # if so: remove it, otherwise we get double '//' in the file pathes
+    find `pwd`/${ROOT_DIR%?} -type f -name "*.cif"
+
+else # the root dir format fits 'finds' needs:
+    find `pwd`/${ROOT_DIR} -type f -name "*.cif"
+
+fi
+

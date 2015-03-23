@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+import multiprocessing
+import subprocess
+import os
+import sys
+import shutil
+from itertools import izip_longest
+
+limit = multiprocessing.cpu_count() * 2
+
+# 1.) create clean work dir
+try:
+  shutil.rmtree("temp_conversion")
+  os.remove("conversion_out.sdf")
+except OSError, e:
+  pass
+
+os.mkdir("temp_conversion") # create a working dir (will be removed afterwards)
+tmp_file = open("tmp_out.sdf","w")
+
+
+# 2.) SEARCH all cif-file pathes:
+root_dir_path = os.getcwd()+"/"+sys.argv[1]
+
+if (root_dir_path[-1] == "/"):
+  root_dir_path=root_dir_path[:-1]
+
+lst_proc = subprocess.Popen(["find", root_dir_path, "-type", "f", "-name", "*.cif"], stdout=subprocess.PIPE)
+
+
+# 3.) EXTRACT pathes and create commands:
+commands   = []
+temp_names = [] # names of temp-files
+cnt = 0
+
+cif_pathes = lst_proc.communicate()[0]
+
+for line in cif_pathes.splitlines():
+  in_name = line.strip()
+  outname = "temp_conversion/temp%d" % (cnt)
+
+  temp_names.append(outname)
+  cnt += 1
+
+  commands.append(["python", "individual_steps/single_convert.py", in_name, outname])
+
+
+# 4.) create a process pool with given number of workers
+p_pool = multiprocessing.Pool( processes=limit )
+
+# map workers over the commands
+r = p_pool.map_async(subprocess.call, commands)
+
+r.wait() # wait for the completion of all workers
+print "Done with converting the single files. Now concatenating...\n"
+
+
+
+# 5.) Concat everything within the temp dir in 10k chunks:
+size_chunk = 10000
+n_chunks = (len (temp_names) / size_chunk) + 1
+
+
+agr_names = []
+for i in range(n_chunks):
+  loc_name = "temp_conversion/arg_%d"%i
+  agr_names.append(loc_name)
+  local_tmp = open(loc_name,"w")
+
+  chunk_names = temp_names[i*size_chunk:(i+1)*size_chunk]
+
+  p = subprocess.Popen(["cat"] + chunk_names, stdout=local_tmp)
+  p.wait()
+  local_tmp.close()
+  map( os.remove, chunk_names) # delete the small files
+
+
+# concat the aggegated files:
+p = subprocess.Popen(["cat"] + agr_names, stdout=tmp_file)
+p.wait()
+
+print "Done with concatenating. Now deleting temp files...\n"
+
+
+
+# 6.) remove temporary dir:
+shutil.rmtree("temp_conversion")
+
+
+# 7.) clean the file header and meta info:
+tmp_file.close()
+tmp_file   = open("tmp_out.sdf",'rw')
+final_file = open("conversion_out.sdf",'w')
+
+is_header = True
+cnt = 0
+
+for line in tmp_file:
+  # modify header
+  if is_header:
+    if line.endswith("V2000\n"):
+      final_file.write( "COD molecule %d \n" % cnt)
+      final_file.write( " molecule %d \n" % cnt)
+      final_file.write("\n")
+      final_file.write( line )
+      is_header = False
+      cnt += 1
+
+  # start header-mode if '$$$$' is found
+  elif (line.startswith("$$$$") ):
+    final_file.write( line )
+    is_header = True
+
+  # remove meta-data (charge) lines
+  else:
+    if (not line.startswith("M") ):
+      final_file.write( line )
+
+    else:
+      if (line.startswith("M  END") ):
+        final_file.write( line )
+
+tmp_file.close()
+os.remove("tmp_out.sdf")
+
+print "converted", len(temp_names) , " cif files"
+print "Done!\n"
+
+
+
