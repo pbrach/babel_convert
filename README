@@ -1,4 +1,4 @@
-*****************
+                    *****************
                       babel_convert
                     *****************
 An OpenBabel wrapper for the conversion of CIF files to a single SDFile.
